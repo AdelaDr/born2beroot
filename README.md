@@ -206,6 +206,7 @@ After attaching the Debian ISO file, the virtual machine can be started to begin
     - Leave blank all software choises and click on `Continue`.
 
 10. Installing the GRUB Boot Loader
+    
     GRUB (Grand Unified Bootloader) is the standard bootloader used by most Linux systems. It allows the computer to load the operating system kernel and also provides the ability to choose between multiple operating systems or kernel versions if they are installed.
     
     - When asked **“Install the GRUB boot loader to the hard disk?”**, select `Yes`.
@@ -257,50 +258,37 @@ After attaching the Debian ISO file, the virtual machine can be started to begin
 
     - Switch to the root user: `su`
 
-Enter the root password created during the Debian installation.
+    - Enter the **root password** created during the Debian installation.
 
-Install the sudo package
+    - Install the sudo package: `apt install sudo`
+    *The package manager will download and install the required files.*
+    - Press `y` when prompted to confirm the installation.
 
-Run the following command:
+    - Reboot the system: `sudo reboot`
 
-apt install sudo
+    - Verify the installation. Once the system restarts: Enter the disk encryption password. Log in with your user account.
 
-The package manager will download and install the required files.
-Press Y when prompted to confirm the installation.
+    - Switch to the root user again: `su`
 
-Reboot the system
+    - Then check that sudo was installed correctly: `sudo -V`
 
-After installation, reboot the machine:
+    If the installation was successful, this command will display the sudo version and configuration information.
 
-sudo reboot
+    *Why do we use sudo instead of logging in as root all the time?*
+        - *it limits privilege escalation*
+        - *it logs administrative actions*
+        - *it reduces the risk of accidental system damage*
 
-Verify the installation
+3. Creating a user
 
-Once the system restarts:
+    - if a user was not added during th installation of the system, we add one `sudo adduser <login>`
 
-Enter the disk encryption passphrase
+4. Creating a group 
 
-Log in with your user account
+    - We create a new group called **user42**: `sudo addgroup user42`
 
-Switch to the root user again:
-
-su
-
-Then check that sudo was installed correctly:
-
-sudo -V
-
-If the installation was successful, this command will display the sudo version and configuration information.
-
-Small detail evaluators love asking about because it exposes whether someone actually understands Linux:
-
-Why do we use sudo instead of logging in as root all the time?
-
-Because:
-
-it limits privilege escalation
-
-it logs administrative actions
+    - It will display **GID** of the group == **roup ID**
+   
 
 it reduces the risk of accidental system damage
 
