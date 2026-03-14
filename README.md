@@ -287,9 +287,23 @@ After attaching the Debian ISO file, the virtual machine can be started to begin
 
     - We create a new group called **user42**: `sudo addgroup user42`
 
-    - It will display **GID** of the group == **roup ID**
+    - It will display **GID** of the group == **Group ID**
    
+    - We can check th group by `getent group user42` (get entries)
 
-it reduces the risk of accidental system damage
+        - It queries the system’s **Name Service Switch (NSS)** databases. They include things like: users, groups, hosts, services.
 
-In other words, root is a chainsaw. sudo is the safety guard that keeps people from cutting off their own leg. And yes, sysadmins absolutely do that when given unrestricted root access.
+        - Linux checks wherever group information is stored: 
+            - /etc/group
+            - LDAP (Lightweight Directory Access Protocol)
+
+
+
+
+
+NIS
+
+other configured sources
+
+and prints the result.
+ 
