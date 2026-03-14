@@ -293,17 +293,27 @@ After attaching the Debian ISO file, the virtual machine can be started to begin
 
         - It queries the system’s **Name Service Switch (NSS)** databases. They include things like: users, groups, hosts, services.
 
-        - Linux checks wherever group information is stored: 
-            - /etc/group
-            - LDAP (Lightweight Directory Access Protocol)
+        - Linux checks wherever group information is stored(and prints the result): 
+            - `/etc/group` (This is the local file on your machine that stores group informatio. Example : sudo:x:27:user1,user2 == group name:password placeholder:GID:users)
+            - **LDAP (Lightweight Directory Access Protocol)** - Centralized user database for many machines. Instead of creating users on every machine, they store them in one central LDAP server.
+            - **NIS (Network Information Service)** - An older system for sharing user and group data across multiple machines. Older and less secure than LDAP.
+            - other configured sources (Active Directory (very common in companies), SSSD, Kerberos, custom authentication systems)
+5. **Installing & configuring SSH**
 
+    *SSH (Secure Shell) is a network protocol that allows secure remote access to a system. It was designed as a secure replacement for older remote shell protocols.*
 
+    *SSH uses a client–server model, where a client connects to a remote server through an encrypted communication channel, ensuring that commands and data cannot be intercepted.*
 
-
-
-NIS
-
-other configured sources
-
-and prints the result.
- 
+    *This allows administrators to manage servers remotely through the command line.*
+    
+    - Before installing new packages, it is good practice to update the package lists: `sudo apt update`
+    - To enable SSH access on the system, install the OpenSSH server package: `sudo apt install openssh-server`
+    - When prompted, type: `y` and press Enter to confirm the installation.
+    - After installation, verify that the SSH service is running: `sudo service ssh status`
+    - If the installation was successful, the output should indicate: `Active: active (running)`
+    
+    *What is the difference between SSH client and SSH server?*
+        
+    *Server → waits for incoming connections (Debian VM)*
+        
+    *Client → initiates the connection (host machine)*
