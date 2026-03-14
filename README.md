@@ -150,23 +150,18 @@ After attaching the Debian ISO file, the virtual machine can be started to begin
 4. Follow the installation prompts:
 
     - Choose your **language** (English)
-
     - Select your **location** (other - Europe - Czechia)
-
     - Configure your **locales** (United states)
-
     - Configure your **keyboard layout** (American English)
 
 5. Configure the **network settings**:
 
     - Set a **hostname** for the server (adrahoto42)
-
     - Leave the **domain name** empty since it is not required
 
 6. Create **users and passwords**:
 
     - Set the **root password**
-
     - Create a **new user account** (adrahoto) and set its **password**
 
 7. Select your time zone  
@@ -174,35 +169,22 @@ After attaching the Debian ISO file, the virtual machine can be started to begin
 8. **Disk Partitioning**:
 
     - Select `Guided – use entire disk and set up encrypted LVM`
-
     - Choose the virtual disk
-
     - Select `Separate /home partition`.
-
     - Select `Yes` so the changes will be writen in the disk and so we can set the logical volume manager (LVM).
-
     - Click on `Cancel`, the erasing of the data is not required.
-
     - Set an **encryption passphrase**
-
     - Enter the Amount of volume group for guided parttioning (max -12.4 GB)
-    
     - Click on `Finish partitioning and write changes to disk`.
-
     - Click `Yes` to confirm that we do not want more changes.
 
 9. Package Manager Configuration
 
     - When asked to **scan additional installation media**, select `No` since no extra packages are required.
-
     - Choose your **country** for the Debian mirror.
-
     - Select `deb.debian.org`, which is the recommended official Debian mirror.
-
     - Leave the **HTTP proxy** field blank and `Continue`.
-
     - When asked about **participating in the package usage survey**, select `No` if you prefer not to send statistics.
-
     - Leave blank all software choises and click on `Continue`.
 
 10. Installing the GRUB Boot Loader
@@ -210,9 +192,7 @@ After attaching the Debian ISO file, the virtual machine can be started to begin
     GRUB (Grand Unified Bootloader) is the standard bootloader used by most Linux systems. It allows the computer to load the operating system kernel and also provides the ability to choose between multiple operating systems or kernel versions if they are installed.
     
     - When asked **“Install the GRUB boot loader to the hard disk?”**, select `Yes`.
-
     - Choose the device where GRUB should be installed. Select the virtual disk: `/dev/sda (ata-VBOX_HARDDISK)`
-    
     - `Continue` the installation process.
     
     *Why do we install GRUB?*
@@ -257,19 +237,13 @@ After attaching the Debian ISO file, the virtual machine can be started to begin
     **Installing sudo**
 
     - Switch to the root user: `su`
-
     - Enter the **root password** created during the Debian installation.
-
     - Install the sudo package: `apt install sudo`
     *The package manager will download and install the required files.*
     - Press `y` when prompted to confirm the installation.
-
     - Reboot the system: `sudo reboot`
-
     - Verify the installation. Once the system restarts: Enter the disk encryption password. Log in with your user account.
-
     - Switch to the root user again: `su`
-
     - Then check that sudo was installed correctly: `sudo -V`
 
     If the installation was successful, this command will display the sudo version and configuration information.
@@ -284,21 +258,17 @@ After attaching the Debian ISO file, the virtual machine can be started to begin
     - if a user was not added during th installation of the system, we add one `sudo adduser <login>`
 
 4. Creating a group 
-
     - We create a new group called **user42**: `sudo addgroup user42`
-
     - It will display **GID** of the group == **Group ID**
-   
     - We can check th group by `getent group user42` (get entries)
 
         - It queries the system’s **Name Service Switch (NSS)** databases. They include things like: users, groups, hosts, services.
-
         - Linux checks wherever group information is stored(and prints the result): 
             - `/etc/group` (This is the local file on your machine that stores group informatio. Example : sudo:x:27:user1,user2 == group name:password placeholder:GID:users)
             - **LDAP (Lightweight Directory Access Protocol)** - Centralized user database for many machines. Instead of creating users on every machine, they store them in one central LDAP server.
             - **NIS (Network Information Service)** - An older system for sharing user and group data across multiple machines. Older and less secure than LDAP.
             - other configured sources (Active Directory (very common in companies), SSSD, Kerberos, custom authentication systems)
-5. **Installing & configuring SSH**
+5. **Installing SSH**
 
     *SSH (Secure Shell) is a network protocol that allows secure remote access to a system. It was designed as a secure replacement for older remote shell protocols.*
 
@@ -317,3 +287,16 @@ After attaching the Debian ISO file, the virtual machine can be started to begin
     *Server → waits for incoming connections (Debian VM)*
         
     *Client → initiates the connection (host machine)*
+
+6. Configuring SSH
+
+    After installing the SSH server, the next step is to configure it according to the project requirements.
+
+    - The SSH server configuration is stored in: `/etc/ssh/sshd_config`
+    - Since this is a system file, it requires root privileges to modify.First switch to the root user: `su`
+    - Then open the configuration file using a text editor: `nano /etc/ssh/sshd_config`
+    - Inside the configuration file, lines beginning with # are commented out. These lines must be uncommented and modified. By default, SSH runs on port 22. For this project it must be changed.
+    - Find the line: `#Port 22`
+    - Modify it to: `Port 4242`
+    
+    *Changing the port is basically moving your front door so the average burglar walks past it. Not perfect security, but it cuts down noise.*
