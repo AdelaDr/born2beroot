@@ -12,7 +12,8 @@
     - [Installing Debian](#installing-debian)
     - [Virtual Machine Setup](#virtual-machine-setup)
     - [monitoring.sh](#monitoringsh)
-
+    - [Cron Configuration](#cron-configuration)
+    - [Signature.txt](#signaturetxt)
 - [Instructions](#instructions)
 - [Resources](#resources)
 - [Project description](#project-description)
@@ -431,33 +432,31 @@ After attaching the Debian ISO file, the virtual machine can be started to begin
 
 This Bash script collects and displays key system information for the virtual machine. It reports the operating system architecture, CPU (physical and virtual cores), RAM and disk usage, CPU load, last reboot time, LVM status, active TCP connections, logged-in users, network details (IP and MAC), and the number of commands executed with `sudo`.
 
-1. Shebang
-    
+1. **Shebang**
     `#!/bin/bash`
     - This tells Linux to run this script using the Bash shell
 
-2. Variables
-
+2. **Variables**
     - Every line like this: `arch=$(uname -a)`
     - Means: Run a command. Save the output into a variable
     - `$()` = command substitution.
 
     The script collects information first, then prints everything at the end.
 
-3. Architecture
+3. **Architecture**
     - `arch=$(uname -a)`
     - Shows kernel information: OS, kernel version, architecture, hostname
     - Example output: `Linux debian 5.10.0-amd64 x86_64 GNU/Linux`
     - The script stores it in `arch`.
 
-4. CPU Physical Cores
+4. **CPU Physical Cores**
     - `cpuf=$(grep "physical id" /proc/cpuinfo | wc -l)`
     - This is a virtual file created by the kernel with CPU info: `/proc/cpuinfo`
     - Find lines mentioning the physical CPU: `grep "physical id"`
     - Count lines: `wc -l`
     - Result = number of physical CPUs.
 
-5. Virtual CPUs
+5. **Virtual CPUs**
     - `cpuv=$(grep "processor" /proc/cpuinfo | wc -l)`
     - Every processor thread appears as:
         ```bash
@@ -467,202 +466,102 @@ This Bash script collects and displays key system information for the virtual ma
         ```
     - Counting them gives the total threads / virtual cores.
 
-6. RAM
+6. **RAM**
     - `free --mega` Shows memory in MB.
-
-Example:
-
-Mem:  1999  432  1200 ...
-
-Script extracts fields using awk.
-
-Total RAM
-ram_total=$(free --mega | awk '$1 == "Mem:" {print $2}')
-
-Field $2 = total memory.
-
-Used RAM
-ram_use=$(free --mega | awk '$1 == "Mem:" {print $3}')
-
-Field $3 = used memory.
-
-RAM Percentage
-ram_percent=$(free --mega | awk '$1 == "Mem:" {printf("%.2f"), $3/$2*100}')
-
-Formula:
-
-used / total * 100
-
-Printed with 2 decimals.
-
-Disk Usage
-
-Command:
-
-df -m
-
-Shows disk usage in MB.
-
-Then filters:
-
-grep "/dev/"
-
-Only real disks.
-
-grep -v "/boot"
-
-Exclude boot partition.
-
-Then awk adds values together.
-
-Total Disk
-disk_total=$(df -m | ... | awk '{disk_t += $2} END {printf ("%.1fGb\n"), disk_t/1024}')
-
-Adds total space $2 and converts MB → GB.
-
-Used Disk
-disk_use=$(df -m | ... | awk '{disk_u += $3} END {print disk_u}')
-
-Adds used space $3.
-
-Disk Percentage
-disk_percent=$(df -m | ... | awk '{disk_u += $3} {disk_t+= $2} END {printf("%d"), disk_u/disk_t*100}')
-
-Same math as RAM.
-
-CPU Load
-
-Command:
-
-vmstat 1 2
-
-Meaning:
-
-sample every 1 second
-
-do it 2 times
-
-First line = average
-Second line = current data.
-
-Then:
-
-tail -1
-
-Take the last line.
-
-Then:
-
-awk '{print $15}'
-
-Column 15 = idle CPU percentage.
-
-So the script calculates:
-
-CPU usage = 100 - idle
-
-Then formats to 1 decimal.
-
-Last Boot
-who -b
-
-Shows last system boot.
-
-Example:
-
-system boot 2026-03-15 13:12
-
-awk extracts the date + time.
-
-LVM Check
-lsblk
-
-Lists disks.
-
-Example:
-
-sda
-└─sda1
-  └─debian--vg-root (lvm)
-
-Script checks if the word lvm exists.
-
-If yes:
-
-echo yes
-
-If not:
-
-echo no
-TCP Connections
-ss -ta | grep ESTAB | wc -l
-
-ss = socket statistics.
-
-Options:
-
--t = TCP
--a = all
-
-Then count connections in ESTABLISHED state.
-
-Logged Users
-users | wc -w
-
-users prints logged users:
-
-john maria root
-
-wc -w counts words.
-
-IP Address
-hostname -I
-
-Returns local IP.
-
-Example:
-
-10.0.2.15
-MAC Address
-ip link | grep "link/ether" | awk '{print $2}'
-
-ip link shows interfaces.
-
-Example:
-
-link/ether 08:00:27:ab:cd:ef
-
-awk extracts the MAC.
-
-Sudo Commands
-journalctl _COMM=sudo | grep COMMAND | wc -l
-
-journalctl reads system logs.
-
-Filter:
-
-_COMM=sudo
-
-Only sudo entries.
-
-Then:
-
-grep COMMAND
-
-Counts only executed commands.
-
-Final Output
-
-Everything gets printed using:
-
-wall
-
-wall = write to all users
-
-It broadcasts the message to every logged-in user.
-
-So the script outputs something like:
-
+    - Script extracts fields using `awk` - text processing language for the terminal. *Linux spits out tons of text, and awk lets you filter it, pick pieces of it, and do calculations on it.*
+
+    - **Total RAM**
+        - `ram_total=$(free --mega | awk '$1 == "Mem:" {print $2}')`
+        - Field $2 = total memory.
+
+    - **Used RAM**
+        - `ram_use=$(free --mega | awk '$1 == "Mem:" {print $3}')`
+        - Field $3 = used memory.
+
+    - **RAM Percentage**
+        - `ram_percent=$(free --mega | awk '$1 == "Mem:" {printf("%.2f"), $3/$2*100}')`
+        - Formula: used / total * 100
+        - Printed with 2 decimals.
+
+7. **Disk Usage**
+    - `df -m` - Shows disk usage in MB.
+    - Then filters:
+        - `grep "/dev/"` - Only real disks.
+        - `grep -v "/boot"`- Exclude boot partition.
+    - Then awk adds values together.
+
+    - **Total Disk**
+        - `disk_total=$(df -m | ... | awk '{disk_t += $2} END {printf ("%.1fGb\n"), disk_t/1024}')`
+        - Adds total space $2 and converts MB → GB.
+
+    - **Used Disk**
+        - `disk_use=$(df -m | ... | awk '{disk_u += $3} END {print disk_u}')`
+        - Adds used space $3.
+
+    - **Disk Percentage**
+        - `disk_percent=$(df -m | ... | awk '{disk_u += $3} {disk_t+= $2} END {printf("%d"), disk_u/disk_t*100}')`
+        - Same math as RAM.
+
+8. **CPU Load**
+    - `vmstat 1 2` - sample every 1 second and do it 2 times
+        - First line = average
+        - Second line = current data.
+    - `tail -1`- Take the last line.
+    - `awk '{print $15}'` - Column 15 = idle CPU percentage.
+    - The script calculates: `CPU usage = 100 - idle` Then formats to 1 decimal.
+
+9. **Last Boot**
+    - `who -b` - Shows last system boot.
+    - Example: `system boot 2026-03-15 13:12`
+    - awk extracts the date + time.
+
+10. **LVM Check**
+    - `lsblk` - Lists disks.
+    - Example:
+        ```bash
+        sda
+        └─sda1
+        └─debian--vg-root (lvm)
+        ```
+    - Script checks if the word lvm exists.
+        - If yes: echo yes
+        - If not: echo no
+
+11. **TCP Connections**
+    - `ss -ta | grep ESTAB | wc -l`
+    - ss = socket statistics.
+        - `-t = TCP`
+        - `-a = all`
+    - Then count connections in ESTABLISHED state.
+
+12. **Logged Users**
+    - `users | wc -w`
+    - `users` prints logged users (john maria root)
+    - `wc -w` counts words.
+
+13. **IP Address**
+    - `hostname -I` - Returns local IP.
+    - Example: `10.0.2.15`
+
+14. **MAC Address**
+    - `ip link | grep "link/ether" | awk '{print $2}'`
+    - `ip link` shows interfaces.
+        - Example: `link/ether 08:00:27:ab:cd:ef`
+    - `awk` extracts the MAC.
+
+15. **Sudo Commands**
+    - `journalctl _COMM=sudo | grep COMMAND | wc -l`
+    - `journalctl` reads system logs.
+    - `_COMM=sudo` - Only sudo entries.
+    - `grep COMMAND` - Counts only executed commands.
+
+16. **Final Output**
+    - Everything gets printed using: `wall`
+    - `wall` = write to all users
+        - It broadcasts the message to every logged-in user.
+
+The script outputs something like:
+```bash
 Architecture: Linux debian ...
 CPU physical: 2
 vCPU: 4
@@ -675,40 +574,26 @@ Connections TCP: 1 ESTABLISHED
 User log: 1
 Network: IP 10.0.2.15 (08:00:27:ab:cd:ef)
 Sudo: 12 cmd
-One thing your guide doesn't explain well
+```
 
-Evaluators almost always ask:
+## Cron Configuration
+- **crontab** is a task scheduler in Linux that allows commands or scripts to run automatically at specified time intervals.
 
-"How does the script run every 10 minutes?"
+- To configure scheduled tasks for the system, we edit the root user's crontab file with: `sudo crontab -u root -e`
+    - This opens the crontab configuration file in a text editor.
 
-Answer:
+- Inside this file, we add a rule to execute our monitoring script every 10 minutes: `*/10 * * * * sh /path_to_script.sh`
 
-You schedule it with cron.
+**A cron schedule consists of five time fields:**
 
-Example:
+| Field | Meaning |
+|-|-|
+| `*/10` | Every 10 minutes |
+| `*` | Every hour |
+| `*` | Every day of the month |
+| `*` | Every month |
+| `*` | Every day of the week|
 
-crontab -e
+- This configuration ensures that the monitoring script runs automatically every 10 minutes and broadcasts the system information using the wall command.
 
-Add:
-
-*/10 * * * * /path/to/script.sh
-
-Meaning:
-
-every 10 minutes run the script
-Reality check
-
-This script looks scary because it's long.
-But it's just:
-
-collect system info
-
-store variables
-
-print them with wall
-
-Linux admins write uglier scripts before breakfast.
-
-You're basically assembling Lego blocks the OS already gives you.
-
-Honestly the only annoying part is memorizing which random column awk needs. Linux loves hiding important numbers in column 15 for no psychological reason.
+## Signature.txt
