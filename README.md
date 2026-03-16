@@ -1,6 +1,5 @@
 *This project has been created as part of the 42 curriculum by adrahoto.*
 
-[![C](https://img.shields.io/badge/language-C-555?style=flat&logo=c)](https://en.wikipedia.org/wiki/C_(programming_language))
 [![42 Project](https://img.shields.io/badge/42-Prague-blue)](https://www.42prague.com/)
 
 # Table of Contents
@@ -15,8 +14,11 @@
     - [Cron Configuration](#cron-configuration)
     - [Signature.txt](#signaturetxt)
 - [Instructions](#instructions)
+    - [Requirements](#requirements)
+    - [Installation](#installation)
+    - [Running the Monitoring Script](#running-the-monitoring-script)
+    - [Connecting via SSH](#connecting-via-ssh)
 - [Resources](#resources)
-- [Project description](#project-description)
 
 # Description
 Born2beRoot is a system administration project focused on setting up and securing a Linux server from scratch inside a virtual machine. The goal is to build a minimal, secure, and well-configured server environment using either Debian or Rocky Linux, following strict security and configuration rules.
@@ -597,3 +599,66 @@ Sudo: 12 cmd
 - This configuration ensures that the monitoring script runs automatically every 10 minutes and broadcasts the system information using the wall command.
 
 ## Signature.txt
+- To generate the signature of the virtual machine, we must create a SHA-1 hash of the .vdi disk file.
+- Before generating the signature, the virtual machine must be completely shut down. If the machine is started or modified afterward, the signature will change and become invalid.
+
+- Ensure the VM is powered off in VirtualBox.
+- From the host machine, navigate to the directory where the virtual machine disk file is stored. This file has the `.vdi` extension.
+- Generate the signature. Run the following command in the terminal: `shasum machinename.vdi`
+    - This command generates a SHA-1 checksum of the virtual disk file.
+- Create the signature file. Copy the generated hash and place it inside a file called: `signature.txt`
+
+*What is shasum?*
+
+*shasum is a command that calculates a SHA-1 cryptographic hash of a file. This hash acts like a fingerprint for the file and allows verification that the file has not been modified.*
+
+# Instructions
+## Requirements
+Before running this project, make sure the following software is installed:
+- VirtualBox
+- A Unix-like system capable of using ssh (Linux or macOS recommended)
+
+## Installation
+- Install VirtualBox if it is not already available on your system.
+- Import or create the virtual machine using the provided Debian image.
+- Start the virtual machine and log in using the configured user credentials.
+
+## Running the Monitoring Script
+The system monitoring script is executed automatically using cron.
+
+The scheduled task is configured in the root crontab:
+
+`sudo crontab -u root -e`
+
+The following rule runs the script every 10 minutes:
+
+`*/10 * * * * sh /path_to_script.sh`
+
+This script collects system information (CPU, memory, disk usage, network data, etc.) and broadcasts it to all logged-in users using the wall command.
+
+## Connecting via SSH
+The virtual machine allows remote connections using SSH on port 4242.
+
+Example connection command:
+
+`ssh <username>@localhost -p 4241`
+
+If the connection is successful, you will be prompted to enter the user password and will gain access to the system through a secure shell session.
+
+# Resources
+- https://noreply.gitbook.io/born2beroot
+- [Debian Official Documentation](https://www.debian.org/doc/)
+- [VirtualBox Documentation](https://www.virtualbox.org/wiki/Documentation)
+- [OpenSSH Manual Pages](https://man.openbsd.org/ssh)
+- https://github.com/Vikingu-del/Born2beRoot
+- Linux Manual Pages (`man`) for commands used in the project:
+    - `sudo`
+    - `ufw`
+    - `cron`
+    - `awk`
+    - `grep`
+    - `df`
+    - `free`
+    - `vmstat`
+    - `lsblk`
+    - `journalctl`
