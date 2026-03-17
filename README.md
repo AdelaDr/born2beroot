@@ -83,6 +83,143 @@ Rocky Linux is a community-driven enterprise Linux distribution designed to be b
 
 Both systems are stable and secure. However, Debian was chosen for its simplicity, documentation quality, and widespread use in general server environments, making it well-suited for this project.
 
+### AppArmor vs SELinux
+- Both are **MAC systems (Mandatory Access Control)**.
+- Even if a program has permission from the user, the security system can still block it.
+- They protect the system from compromised programs.
+
+**AppArmor**
+- Used by Ubuntu and Debian.
+- It restricts programs based on file paths.
+
+Example rule (Firefox can read files in /home/user):
+```bash
+/usr/bin/firefox {
+  /home/user/** r,
+}
+```
+Characteristics:
+- ✔ easier to configure
+- ✔ human-readable rules
+- ✔ profile based
+- ✔ simpler for small servers
+- ❌ less powerful
+- ❌ weaker isolation model
+
+**SELinux**
+- Used by Red Hat Enterprise Linux, Fedora, and CentOS.
+- Uses security labels (contexts).
+
+Example:
+```bash
+httpd_t
+user_home_t
+```
+A rule might say:
+```bash
+httpd_t cannot read user_home_t
+```
+Characteristics:
+- ✔ extremely powerful
+- ✔ very granular security
+- ✔ enterprise standard
+- ✔ mandatory labeling system
+- ❌ harder to configure
+- ❌ confusing errors
+- ❌ debugging pain
+
+| | AppArmor | SELinux |
+|-|-|-|
+| Security model | path-based | label-based |
+| Complexity | simple | complex |
+| Flexibility | moderate | extremely high |
+| Common on | Debian/Ubuntu | RedHat/Fedora |
+
+### UFW vs firewalld
+- Both are front-ends for iptables/nftables.
+- They simplify firewall configuration.
+
+**UFW (Uncomplicated Firewall)**
+- Default firewall on Ubuntu and often used on Debian.
+
+Example rule(Allow traffic on port 4242.):
+`ufw allow 4242`
+
+Characteristics:
+- ✔ very simple
+- ✔ beginner friendly
+- ✔ minimal commands
+- ✔ perfect for small servers
+- ❌ less flexible
+- ❌ fewer advanced features
+
+**firewalld**
+- Used by Fedora, Red Hat Enterprise Linux, and CentOS.
+- Uses zones.
+
+Example:
+```bash
+public
+home
+internal
+trusted
+```
+Example rule:
+
+`firewall-cmd --add-port=4242/tcp`
+
+Characteristics:
+- ✔ dynamic firewall
+- ✔ supports zones
+- ✔ enterprise oriented
+- ✔ more flexible
+- ❌ more complicated
+
+
+| | UFW | firewalld |
+|-|-|-|
+|Difficulty | easy | medium |
+| Concept |simple rules | zones|
+| Used in | Debian/Ubuntu | Fedora/RHEL |
+| Best for | small servers | enterprise systems |
+
+### VirtualBox vs UTM
+-Both run virtual machines, but they use different underlying technology.
+- Works by simulating hardware for the guest OS.
+
+**VirtualBox**
+- Made by Oracle.
+- Runs full virtualization.
+- Used everywhere in 42 schools.
+
+Characteristics:
+- ✔ runs Windows/Linux/macOS VMs
+- ✔ mature and stable
+- ✔ huge documentation
+- ✔ easy GUI
+- ❌ slower than native
+- ❌ kernel modules needed
+- ❌ limited Apple Silicon support
+
+**UTM**
+- Based on QEMU.
+- Popular on macOS (especially Apple Silicon).
+
+Characteristics:
+- ✔ supports ARM virtualization
+- ✔ good on M1/M2 Macs
+- ✔ can emulate many CPU architectures
+- ✔ open source
+- ❌ slower in emulation mode
+- ❌ fewer features than VirtualBox GUI
+
+| | VirtualBox | UTM |
+|-|-|-|
+| Backend | VirtualBox hypervisor | QEMU |
+| Best platform | Windows/Linux | macOS |
+| Architecture support | mostly x86 | many (ARM, x86, etc.) |
+| Usage | common in schools | common on Macs |
+
 ## Creating a New Virtual Machine
 
 Once VirtualBox is installed, the next step is to create a new virtual machine (VM) to host your server.
@@ -169,7 +306,7 @@ After attaching the Debian ISO file, the virtual machine can be started to begin
     - To finish the installation we click on `Continue`.
 
 ## Virtual Machine Setup
-1. First Connection
+1. **First Connection**
 
     **Booting into the Virtual Machine**
 
@@ -186,7 +323,7 @@ After attaching the Debian ISO file, the virtual machine can be started to begin
 
     *Meaning if someone steals the VM disk file, they just get encrypted noise instead of THE system.*
 
-2. Installing sudo and Configuring Users
+2. **Installing sudo and Configuring Users**
 
     sudo is a program used in Unix-like operating systems that allows a permitted user to execute commands with the privileges of another user, typically the superuser (root).
 
@@ -213,11 +350,11 @@ After attaching the Debian ISO file, the virtual machine can be started to begin
         - *it logs administrative actions*
         - *it reduces the risk of accidental system damage*
 
-3. Creating a user
+3. **Creating a user**
 
     - if a user was not added during th installation of the system, we add one `sudo adduser <login>`
 
-4. Creating a group 
+4. **Creating a group**
     - We create a new group called **user42**: `sudo addgroup user42`
     - It will display **GID** of the group == **Group ID**
     - We can check th group by `getent group user42` (get entries)
@@ -248,7 +385,7 @@ After attaching the Debian ISO file, the virtual machine can be started to begin
         
     *Client → initiates the connection (host machine)*
 
-6. Configuring SSH
+6. **Configuring SSH**
 
     After installing the SSH server, the next step is to configure it according to the project requirements.
 
@@ -268,7 +405,7 @@ After attaching the Debian ISO file, the virtual machine can be started to begin
     
     *Changing the port is basically moving your front door so the average burglar walks past it. Not perfect security, but it cuts down noise.*
 
-7. Connecting via SSH
+7. **Connecting via SSH**
 
     To connect to the virtual machine from the host system using SSH, port forwarding must be configured in **VirtualBox**.
 
@@ -301,7 +438,7 @@ After attaching the Debian ISO file, the virtual machine can be started to begin
 
     *connect from my computer → back to my computer → forwarded into the VM.*
 
-8. Installing and Configuring UFW 🔥🧱
+8. **Installing and Configuring UFW** 🔥🧱
 
     **UFW (Uncomplicated Firewall)** is a firewall management tool for Linux that provides a simple interface for configuring **iptables**, the underlying packet filtering system.
 
@@ -327,7 +464,7 @@ After attaching the Debian ISO file, the virtual machine can be started to begin
     ```
     *Otherwise people lock themselves out of their own machine.*
 
-9. Allowing a Port Through the Firewall
+9. **Allowing a Port Through the Firewall**
 
     Since SSH has been configured to run on port 4242, the firewall must allow incoming connections on that port. Otherwise, any attempt to connect via SSH will be blocked.
 
@@ -347,7 +484,7 @@ After attaching the Debian ISO file, the virtual machine can be started to begin
     - *SSH listening on port 4242*
     - *Firewall allowing port 4242*
 
-10. Configuring Sudo Policies
+10. **Configuring Sudo Policies**
 
     To configure the required sudo security policies, a custom configuration file will be created inside: `/etc/sudoers.d/`
 
